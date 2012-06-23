@@ -1,4 +1,4 @@
-(function ( Hydra ) {
+define(['hydra'], function ( Hydra ) {
 	'use strict';
 	var Deferred, Promise, When, reResolve, _false_, _true_, _null_;
 
@@ -247,4 +247,4 @@
 	 * @member Hydra
 	 */
 	Hydra.extend('when', When);
-}( Hydra ));
+});

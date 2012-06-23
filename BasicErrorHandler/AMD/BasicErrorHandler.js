@@ -1,4 +1,4 @@
-(function ( global, Hydra ) {
+define(['hydra'], function(Hydra){
 	'use strict';
 	var ErrorHandler, oConsole, _null_, doc;
 
@@ -118,7 +118,7 @@
 		var aArgs;
 		aArgs = slice( arguments, 0 ).concat();
 
-		if ( typeof oConsole === "undefined" || (typeof aArgs[aArgs.length - 1] === 'boolean' && !aArgs[aArgs.length - 1]) ) {
+		if ( oConsole === _undefined_ || (typeof aArgs[aArgs.length - 1] === 'boolean' && !aArgs[aArgs.length - 1]) ) {
 			if ( this.list === _null_ ) {
 				this._create_dom();
 			}
@@ -143,4 +143,4 @@
 	};
 
 	Hydra.setErrorHandler(ErrorHandler);
-}( window, Hydra ));
+});

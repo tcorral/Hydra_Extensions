@@ -1,4 +1,4 @@
-(function($, Hydra){
+define(['jquery', 'hydra'], function($, Hydra){
 	'use strict';
 	var DOM;
 	function find(sSelector, oContext)
@@ -81,4 +81,4 @@
 		}
 	};
 	Hydra.extend("dom", DOM);
-}(jQuery, Hydra));
+});

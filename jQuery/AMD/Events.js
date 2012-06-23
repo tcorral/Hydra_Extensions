@@ -1,4 +1,4 @@
-(function ( $, Hydra ) {
+define(['jquery', 'hydra'], function ( $, Hydra ) {
 	'use strict';
 	var Events;
 
@@ -40,4 +40,4 @@
 		}
 	};
 	Hydra.extend( "events", Events );
-}( jQuery, Hydra ));
+});
