@@ -20,7 +20,7 @@ Examples of allowed event handlers:
 
 	//http://api.jquery.com/ready/
 		$(document).ready(function(){});
-### Add it in your code
+### Add it in your application
 We have created Router to be used with an without require.js
 #### Simple
 	<script type="text/javascript" src="Hydra.js"></script>
@@ -37,5 +37,5 @@ Remember that is needed that the body element in page must have an id that will 
 	Hydra.router.setDefault(function () {
 		alert("No route defined for this page");
 	});
-#License
+# License
 Router as Hydra.js extensions is licensed under MIT license. (see LICENSE file)

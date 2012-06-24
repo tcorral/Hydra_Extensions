@@ -7,10 +7,10 @@ While one of Promise objects is not resolved the execution of callbacks in Defer
 Promise and Deferred objects are used to defer the execution of depending asynchronous callbacks to the execution of all the callbacks, to be sure that all goes well.
 # Deferred as Hydra.js extension
 ## Requirements
-You will only need to load it after the import of Hydra.js in your code.
+You will need to load it after the import of Hydra.js in your code.
 
 Deferred and Promise objects make use of Hydra.action to listen and notify the 'complete' event to check that all Promise objects are resolved.
-## Add it in your code
+## Add it in your application
 We have created Deferred to be used with and without require.js
 ### Simple
 	<script type="text/javascript" src="Hydra.js"></script
@@ -71,5 +71,5 @@ When this method is called the 'complete' event is called on Deferred object to 
 This static method creates internally a Deferred object, so that When have the same API methods. It's important to pass at least one Promise object to this method.
 ### Hydra.when - Params [oPromise, [oPromiseN]]
 Returns a Deferred object.
-#License
+# License
 Deferred, Promise and When as Hydra.js extensions are licensed under MIT license. (see LICENSE file)
