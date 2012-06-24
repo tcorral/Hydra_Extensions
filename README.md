@@ -7,5 +7,5 @@ This repo must store all the extensions for Hydra.js.
 ** [Folder] src
 ** [Folder] test
 ** changelog.txt
-** LICENSE
+** LICENSE	(MIT/BSD are preferred)
 ** README.MD
