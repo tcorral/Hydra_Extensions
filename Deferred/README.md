@@ -39,7 +39,7 @@ To use Deferred we have two different ways:
 	setTimeout(function(){ oPromise1.resolve(); }, 500);
 	setTimeout(function(){ oPromise2.resolve(); }, 1000);
 
-#API
+# API
 ## Hydra.deferred
 ### add - Params [Promise]
 This method expects a Promise object to be added to the Deferred object.
@@ -71,5 +71,6 @@ When this method is called the 'complete' event is called on Deferred object to 
 This static method creates internally a Deferred object, so that When have the same API methods. It's important to pass at least one Promise object to this method.
 ### Hydra.when - Params [oPromise, [oPromiseN]]
 Returns a Deferred object.
+
 # License
 Deferred, Promise and When as Hydra.js extensions are licensed under MIT license. (see LICENSE file)
