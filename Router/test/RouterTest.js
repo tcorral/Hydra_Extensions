@@ -29,4 +29,27 @@
 			};
 		}
 	}));
+	TestCase("HydraSetDefaultTest", sinon.testCase({
+		setUp: function(){},
+		tearDown: function(){},
+		'test should check that router.setDefault is a function': function() {
+			assertFunction(Hydra.router.setDefault);
+		},
+		'test should check that router.setDefault must receive one argument': function() {
+			assertEquals(1, Hydra.router.setDefault.length);
+		},
+		'test should execute the default callback if the id of the body has not match': function () {
+			var oStub = sinon.stub(),
+				oStub2 = sinon.stub();
+			document.body.id = 'invalid';
+			Hydra.router.add('home', oStub2);
+
+			Hydra.router.setDefault('test', oStub);
+
+			window.onload = function()
+			{
+				assertEquals(1, oStub.callCount);
+			};
+		}
+	}));
 }( Hydra ));

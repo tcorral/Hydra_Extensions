@@ -1,8 +1,8 @@
-define( ['domready', 'hydra'], function ( DomReady, Hydra ) {
+define( ['jquery', 'hydra'], function ( $, Hydra ) {
 	'use strict';
 	var oRoutes = {},
 		fpDefault;
-	DomReady.ready( function () {
+	$( document ).ready( function () {
 		var fpCallback = oRoutes[document.body.id];
 		if ( typeof fpCallback !== 'undefined' ) {
 			fpCallback();

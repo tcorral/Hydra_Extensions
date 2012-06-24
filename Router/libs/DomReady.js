@@ -1,3 +1,6 @@
+/**
+ * This code has been borrowed from https://gist.github.com/1376157 and his creator is alessioalex in Github
+ */
 (function(){
 
 	var DomReady = window.DomReady = {};
