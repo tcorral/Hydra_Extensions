@@ -30,9 +30,12 @@ We have created Router to be used with an without require.js
 #Usage
 Remember that is needed that the body element in page must have an id that will be the route key.
 ## Add Route
-	Hydra.router.add('home', function()
-	{
+	Hydra.router.add('home', function () {
 		alert('Hello world');
+	});
+## Set Default Route
+	Hydra.router.setDefault(function () {
+		alert("No route defined for this page");
 	});
 #License
 Router as Hydra.js extensions is licensed under MIT license. (see LICENSE file)
