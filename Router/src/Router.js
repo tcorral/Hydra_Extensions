@@ -1,7 +1,7 @@
 (function ( Hydra, DomReady ) {
 	'use strict';
 	var oRoutes = {},
-		fpDefault;
+		fpDefault = function() {};
 	DomReady.ready( function () {
 		var fpCallback = oRoutes[document.body.id];
 		if ( typeof fpCallback !== 'undefined' ) {
