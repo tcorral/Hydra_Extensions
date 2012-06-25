@@ -1,4 +1,4 @@
-define(['jquery', 'underscore', 'backbone', 'hydra'], function($, _, Backbone, Hydra){
+define(['backbone', 'hydra'], function(Backbone, Hydra){
 	'use strict';
 	Hydra.extend("backbone", Backbone);
 });
