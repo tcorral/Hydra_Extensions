@@ -1,7 +1,17 @@
 (function ( Hydra ) {
 	'use strict';
-	var Deferred, Promise, When, reResolve, _false_, _true_, _null_;
+	var Deferred, Promise, When, reResolve, _false_, _true_, _null_, slice;
 
+	/**
+	 * Converts objects like node list to real array.
+	 * @private
+	 * @param {Object} oLikeArray
+	 * @param {Number} nElements
+	 * @return {Array}
+	 */
+	function slice ( oLikeArray, nElements ) {
+		return [].slice.call( oLikeArray, nElements || 0 );
+	}
 	/**
 	 * Regular expression to detect if a Promise if resolved or not.
 	 * @private
