@@ -1,20 +1,32 @@
-(function ( global, ns, _undefined_ ) {
+(function () {
 	'use strict';
-	var oModules, doc, oVars, _null_, _false_, _true_, sVersion, Hydra, bDebug, ErrorHandler, Module, Action, oActions;
+	var root, sNotDefined, oModules, oVars, _null_, _false_, _true_, sVersion, Hydra, bDebug, ErrorHandler, Module, Action, oActions, isNodeEnvironment;
 
 	/**
-	 * If ns (namespace) is not supplied global is assumed
+	 * Check if Object.create exist, if not exist we create it to be used inside the code.
 	 */
-	if ( ns === _undefined_ ) {
-		ns = global;
+	if (typeof Object.create !== 'function') {
+		Object.create = function (oObject) {
+			function Copy() {}
+			Copy.prototype = oObject;
+			return new Copy();
+		};
 	}
+	/**
+	 * Check if Hydra.js is loaded in Node.js environment
+	 * @type {Boolean}
+	 */
+	isNodeEnvironment = typeof exports === "object" && typeof module === "object" && typeof module.exports === "object" && typeof require === "function";
+	/**
+	 * Cache 'undefined' string to test typeof
+	 * @type {String}
+	 */
+	sNotDefined = 'undefined';
 
 	/**
-	 * Assign global.document (window.document) to a local variable.
+	 * set the correct root depending from the environment.
 	 */
-	if ( global.document ) {
-		doc = global.document;
-	}
+	root = this;
 
 	/**
 	 * Contains a reference to null object to decrease final size
@@ -49,7 +61,7 @@
 	 * @private
 	 * @type {String}
 	 */
-	sVersion = "2.2.0";
+	sVersion = '2.5.2';
 
 	/**
 	 * Used to activate the debug mode
@@ -199,7 +211,7 @@
 		};
 		oModule.handleAction = function ( oNotifier ) {
 			var fpCallback = this.oEventsCallbacks[oNotifier.type];
-			if ( fpCallback === _undefined_ ) {
+			if ( typeof fpCallback === sNotDefined ) {
 				return;
 			}
 			fpCallback.call( this, oNotifier );
@@ -220,8 +232,8 @@
 	 */
 	function createInstance ( sModuleId ) {
 		var oAction, oInstance, sName, fpMethod;
-		if ( oModules[sModuleId] === _undefined_ ) {
-			throw new Error( "The module is not registered!" );
+		if ( typeof oModules[sModuleId] === sNotDefined ) {
+			throw new Error( 'The module ' + sModuleId + ' is not registered!' );
 		}
 		oAction = new Action();
 		sName = '';
@@ -253,7 +265,7 @@
 	/**
 	 * Simple object to abstract the error handler, the most basic is to be the console object
 	 */
-	ErrorHandler = global.console || {
+	ErrorHandler = root.console || {
 		log: function(){}
 	};
 	/**
@@ -271,6 +283,10 @@
 		 * @type String
 		 */
 		type: 'Module',
+		/**
+		 * Wrapper to use createInstance for plugins if needed.
+		 */
+		getInstance: createInstance,
 		/**
 		 * register is the method that will add the new module to the oModules object.
 		 * sModuleId will be the key where it will be stored.
@@ -291,10 +307,9 @@
 		 * @private
 		 * @param {Object} oModuleBase
 		 * @param {Object} oModuleExtended
-		 * @param {Boolean} bKeepParent If we keep parent calls to be callable via __super__.
 		 * @return {Module}
 		 */
-		_merge: function ( oModuleBase, oModuleExtended, bKeepParent ) {
+		_merge: function ( oModuleBase, oModuleExtended ) {
 			var oFinalModule, sKey, callInSupper;
 			oFinalModule = {};
 			callInSupper = function ( fpCallback ) {
@@ -304,20 +319,18 @@
 				};
 			};
 
-			if ( bKeepParent ) {
-				oFinalModule.__super__ = {};
-				oFinalModule.__super__.__instance__ = oModuleBase;
-				oFinalModule.__super__.__call__ = function ( sKey, aArgs ) {
-					var oObject = this;
-					while ( ownProp( oObject, sKey ) === _false_ ) {
-						oObject = oObject.__instance__.__super__;
-					}
-					oObject[sKey].apply( oFinalModule, aArgs );
-				};
-			}
+			oFinalModule.__super__ = {};
+			oFinalModule.__super__.__instance__ = oModuleBase;
+			oFinalModule.__super__.__call__ = function ( sKey, aArgs ) {
+				var oObject = this;
+				while ( ownProp( oObject, sKey ) === _false_ ) {
+					oObject = oObject.__instance__.__super__;
+				}
+				oObject[sKey].apply( oFinalModule, aArgs );
+			};
 			for ( sKey in oModuleBase ) {
 				if ( ownProp( oModuleBase, sKey ) ) {
-					if ( sKey === "__super__" ) {
+					if ( sKey === '__super__' ) {
 						continue;
 					}
 					oFinalModule[sKey] = oModuleBase[sKey];
@@ -326,7 +339,7 @@
 
 			for ( sKey in oModuleExtended ) {
 				if ( ownProp( oModuleExtended, sKey ) ) {
-					if ( oFinalModule.__super__ !== _undefined_ && isFunction( oFinalModule[sKey] ) ) {
+					if ( typeof oFinalModule.__super__ !== sNotDefined && isFunction( oFinalModule[sKey] ) ) {
 						oFinalModule.__super__[sKey] = (callInSupper( oFinalModule[sKey] ));
 
 						oFinalModule[sKey] = oModuleExtended[sKey];
@@ -353,7 +366,8 @@
 		 * @param {Function} oThirdParameter [optional] this must exist only if we need to create a new module that extends the baseModule.
 		 */
 		extend: function ( sModuleId, oSecondParameter, oThirdParameter ) {
-			var oModule, sFinalModuleId, fpCreator, oBaseModule, oExtendedModule, oFinalModule, oAction;
+			var oModule, sFinalModuleId, fpCreator, oBaseModule, oExtendedModule, oFinalModule, self, oAction;
+			self = this;
 			oModule = oModules[sModuleId];
 			sFinalModuleId = sModuleId;
 			fpCreator = function ( oAction ) {
@@ -362,47 +376,47 @@
 
 			// Function "overloading".
 			// If the 2nd parameter is a string,
-			if ( typeof oSecondParameter === "string" ) {
+			if ( typeof oSecondParameter === 'string' ) {
 				sFinalModuleId = oSecondParameter;
 				fpCreator = oThirdParameter;
 			} else {
 				fpCreator = oSecondParameter;
 			}
-			if ( oModule === _undefined_ ) {
+			if ( typeof oModule === sNotDefined ) {
 				return;
 			}
 			oAction = new Action();
 			oExtendedModule = fpCreator( oAction );
 			oBaseModule = oModule.creator( oAction );
-			// If we extend the module with the different name, we
-			// create proxy class for the original methods.
-			oFinalModule = this._merge( oBaseModule, oExtendedModule, (sFinalModuleId !== sModuleId) );
-			// This gives access to the Action instance used to listen and notify.
-			oFinalModule.__action__ = oAction;
 
 			oModules[sFinalModuleId] = {
-				creator: (function ( oModule ) {
-					return function () {
-						return oModule;
-					};
-				}( oFinalModule )),
+				creator: function(oAction){
+					// If we extend the module with the different name, we
+					// create proxy class for the original methods.
+					oFinalModule = self._merge( oBaseModule, oExtendedModule );
+					// This gives access to the Action instance used to listen and notify.
+					oFinalModule.__action__ = oAction;
+					return oFinalModule;
+				},
 				instances: {}
 			};
-
-			oModule = _null_;
-			sFinalModuleId = _null_;
-			fpCreator = _null_;
-			oBaseModule = _null_;
-			oExtendedModule = _null_;
-			oFinalModule = _null_;
-			oAction = _null_;
+		},
+		setInstance: function(sModuleId, sIdInstance, oInstance)
+		{
+			var oModule = oModules[sModuleId];
+			if(!oModule)
+			{
+				throw new Error( 'The module '+ sModuleId +' is not registered!' );
+			}
+			oModule.instances[sIdInstance] = oInstance;
+			return oModule;
 		},
 		/**
 		 * Sets an object of vars and add it's content to oVars private variable
 		 * @param oVar
 		 */
 		setVars: function ( oVar ) {
-			if ( typeof oVars !== 'undefined' ) {
+			if ( typeof oVars !== sNotDefined ) {
 				oVars = simpleMerge( oVars, oVar );
 			} else {
 				oVars = oVar;
@@ -416,60 +430,29 @@
 			return simpleMerge( {}, oVars );
 		},
 		/**
-		 * test is a method that will return the module without wrapping their methods.
-		 * It's called test because it was created to be able to test the modules with unit testing.
-		 * It must work only when it's executed in jstestdriver environment
-		 * @member Module.prototype
-		 * @param {String} sModuleId
-		 * @param {Function} fpCallback
-		 */
-		test: function ( sModuleId, fpCallback ) {
-			if ( jstestdriver ) {
-				setDebug( _true_ );
-				fpCallback( createInstance( sModuleId ) );
-				setDebug( _false_ );
-			}
-		},
-		/**
-		 * getModule returns the module with the id
-		 * It must work only when it's executed in jstestdriver environment
-		 * @param {String} sModuleId
-		 * @param {String} sContainerId
-		 * @return {Module}
-		 */
-		getModule: function ( sModuleId, sContainerId ) {
-			var oModule = oModules[sModuleId], oInstance;
-			if ( jstestdriver ) {
-				oInstance = createInstance( sModuleId );
-				oModule.instances[sContainerId] = oInstance;
-				return oModule;
-			}
-			return null;
-		},
-		/**
 		 * start is the method that will initialize the module.
 		 * When start is called the module instance will be created and the init method is called.
 		 * If bSingle is true and the module is started the module will be stopped before instance it again.
 		 *   This avoid execute the same listeners more than one time.
 		 * @member Module.prototype
 		 * @param {String} sModuleId
-		 * @param {String} sContainerId
+		 * @param {String} sIdInstance
 		 * @param {Object} oData
 		 * @param {Boolean} bSingle
 		 * @return {Module} instance of the module
 		 */
-		start: function ( sModuleId, sContainerId, oData, bSingle ) {
+		start: function ( sModuleId, sIdInstance, oData, bSingle ) {
 			var oModule, oInstance;
 			oModule = oModules[sModuleId];
 
-			if ( bSingle && this.isModuleStarted( sModuleId, sContainerId ) ) {
-				this.stop( sModuleId, sContainerId );
+			if ( bSingle && this.isModuleStarted( sModuleId, sIdInstance ) ) {
+				this.stop( sModuleId, sIdInstance );
 			}
-			if ( oModule !== _undefined_ ) {
+			if ( typeof oModule !== sNotDefined ) {
 				oInstance = createInstance( sModuleId );
-				oModule.instances[sContainerId] = oInstance;
-				oInstance.__container__ = doc.getElementById( sContainerId );
-				if ( typeof oData !== 'undefined' ) {
+				oModule.instances[sIdInstance] = oInstance;
+				oInstance._id_ =  sIdInstance;
+				if ( typeof oData !== sNotDefined ) {
 					oInstance.init( oData );
 				} else {
 					oInstance.init();
@@ -484,11 +467,11 @@
 		 * Checks if module was already successfully started
 		 * @member Module.prototype
 		 * @param {String} sModuleId Name of the module
-		 * @param {String} sContainerId Id of the DOM element
+		 * @param {String} sInstanceId Id of the instance
 		 * @return {Boolean}
 		 */
-		isModuleStarted: function ( sModuleId, sContainerId ) {
-			return (typeof oModules[sModuleId] !== _undefined_ && oModules[sModuleId].instances[sContainerId] !== _undefined_);
+		isModuleStarted: function ( sModuleId, sInstanceId ) {
+			return (typeof oModules[sModuleId] !== sNotDefined && typeof oModules[sModuleId].instances[sInstanceId] !== sNotDefined);
 		},
 		/**
 		 * startAll is the method that will initialize all the registered modules.
@@ -500,7 +483,7 @@
 			for ( sModuleId in oModules ) {
 				if ( ownProp( oModules, sModuleId ) ) {
 					oModule = oModules[sModuleId];
-					if ( oModule !== _undefined_ ) {
+					if ( typeof oModule !== sNotDefined ) {
 						this.start( sModuleId, Math.random() );
 					}
 				}
@@ -513,17 +496,17 @@
 		 * When stop is called the module will call the destroy method and will nullify the instance.
 		 * @member Module.prototype
 		 * @param {String} sModuleId
-		 * @param {String} sContainerId
+		 * @param {String} sInstanceId
 		 * @return {Boolean}
 		 */
-		stop: function ( sModuleId, sContainerId ) {
+		stop: function ( sModuleId, sInstanceId ) {
 			var oModule, oInstance;
 			oModule = oModules[sModuleId];
-			if ( oModule === _undefined_ ) {
+			if ( typeof oModule === sNotDefined ) {
 				return false;
 			}
-			oInstance = oModule.instances[sContainerId];
-			if ( oModule !== _undefined_ && oInstance !== _undefined_ ) {
+			oInstance = oModule.instances[sInstanceId];
+			if ( typeof oModule !== sNotDefined && typeof oInstance !== sNotDefined ) {
 				oInstance.destroy();
 			}
 			oModule = oInstance = _null_;
@@ -534,15 +517,15 @@
 		 * @member Module.prototype
 		 */
 		stopAll: function () {
-			var sModuleId, oModule, sContainerId;
+			var sModuleId, oModule, sInstanceId;
 
 			for ( sModuleId in oModules ) {
 				if ( ownProp( oModules, sModuleId ) ) {
 					oModule = oModules[sModuleId];
-					if ( oModule !== _undefined_ ) {
-						for ( sContainerId in oModule.instances ) {
-							if ( ownProp( oModule.instances, sContainerId ) ) {
-								this.stop( sModuleId, sContainerId );
+					if ( typeof oModule !== sNotDefined ) {
+						for ( sInstanceId in oModule.instances ) {
+							if ( ownProp( oModule.instances, sInstanceId ) ) {
+								this.stop( sModuleId, sInstanceId );
 							}
 
 						}
@@ -559,7 +542,7 @@
 		 * @param {String} sModuleId
 		 */
 		_delete: function ( sModuleId ) {
-			if ( oModules[sModuleId] !== _undefined_ ) {
+			if ( typeof oModules[sModuleId] !== sNotDefined ) {
 				delete oModules[sModuleId];
 			}
 		},
@@ -570,10 +553,10 @@
 		 */
 		remove: function ( sModuleId ) {
 			var oModule = oModules[sModuleId];
-			if ( oModule === _undefined_ ) {
+			if ( typeof oModule === sNotDefined ) {
 				return null;
 			}
-			if ( oModule !== _undefined_ ) {
+			if ( typeof oModule !== sNotDefined ) {
 				try {
 					return oModule;
 				}
@@ -599,7 +582,7 @@
 		 * @member Action.prototype
 		 * @type String
 		 */
-		type: "Action",
+		type: 'Action',
 		/**
 		 * listen is the method that will add a new action to the oActions object
 		 * and that will activate the listener.
@@ -615,7 +598,7 @@
 
 			for ( nNotification = 0; nNotification < nLenNotificationsToListen; nNotification = nNotification + 1 ) {
 				sNotification = aNotificationsToListen[nNotification];
-				if ( oActions[sNotification] === _undefined_ ) {
+				if ( typeof oActions[sNotification] === sNotDefined ) {
 					oActions[sNotification] = [];
 				}
 				oActions[sNotification].push( {
@@ -634,7 +617,7 @@
 			sType = oNotifier.type;
 			oAction = _null_;
 
-			if ( oActions[sType] === _undefined_ ) {
+			if ( typeof oActions[sType] === sNotDefined ) {
 				return;
 			}
 			// Duplicate actions array in order to avoid broken references when removing listeners.
@@ -773,12 +756,14 @@
 
 	/**
 	 * Extends Hydra object with new functionality
+	 * @static
+	 * @member Hydra
 	 * @param sIdExtension
 	 * @param oExtension
 	 */
 	Hydra.extend = function(sIdExtension, oExtension)
 	{
-		if(this[sIdExtension] === _undefined_)
+		if(typeof this[sIdExtension] === sNotDefined)
 		{
 			this[sIdExtension] = oExtension;
 		}else
@@ -789,13 +774,15 @@
 
 	/**
 	 * Adds an alias to parts of Hydra
+	 * @static
+	 * @member Hydra
 	 * @param sOldName
 	 * @param sNewName
 	 * @return {Boolean}
 	 */
 	Hydra.noConflict = function(sOldName, oNewContext, sNewName)
 	{
-		if(this[sOldName] !== _undefined_)
+		if(typeof this[sOldName] !== sNotDefined)
 		{
 			oNewContext[sNewName] = this[sOldName];
 			return true;
@@ -804,7 +791,14 @@
 	};
 
 	/*
-	 * This line exposes the private object to be accessible from outside of this code.
+	 * Expose Hydra to be used in node.js, as AMD module or as global
 	 */
-	ns.Hydra = Hydra;
-}( window ));
+	root.Hydra = Hydra;
+	if (isNodeEnvironment) {
+		module.exports = Hydra;
+	} else if(typeof define !== 'undefined') {
+		define(function() {
+			return Hydra;
+		});
+	}
+}).call(this);
