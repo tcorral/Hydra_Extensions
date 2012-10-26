@@ -1,6 +1,8 @@
+/*global window, document, Hydra, TestCase, sinon, assertString, assertSame, assertEquals*/
 (function ( win, doc, Hydra ) {
 	'use strict';
-	TestCase( "HydraEventsBindTest", sinon.testCase( {
+	var oTestCase = TestCase;
+	oTestCase( "HydraEventsBindTest", sinon.testCase( {
 		setUp: function ()
 		{
 			var self = this;
@@ -27,7 +29,7 @@
 		}
 	} ) );
 
-	TestCase( "HydraEventsTriggerTest", sinon.testCase( {
+	oTestCase( "HydraEventsTriggerTest", sinon.testCase( {
 		setUp: function ()
 		{
 			var self = this;
@@ -54,7 +56,7 @@
 		}
 	} ) );
 
-	TestCase( "HydraEventsUnbindTest", sinon.testCase( {
+	oTestCase( "HydraEventsUnbindTest", sinon.testCase( {
 		setUp: function ()
 		{
 			var self = this;
