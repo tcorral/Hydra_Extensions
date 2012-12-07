@@ -10,12 +10,12 @@
 	}
 	function setupPromiseNotify()
 	{
-		sinon.stub( this.oPromise.oAction, "notify" );
+		sinon.stub( Hydra.bus, "publish" );
 		this.oResult = 'test';
 	}
 	function teardownPromiseNotify()
 	{
-		this.oPromise.oAction.notify.restore();
+		Hydra.bus.publish.restore();
 		delete this.oResult;
 	}
 	function setupPromisePush()
@@ -32,16 +32,12 @@
 	}
 	function setupDeferred()
 	{
-		this.oAction = Hydra.action();
-		sinon.stub( this.oAction, "listen" );
-		sinon.stub( Hydra, "action" ).returns( this.oAction );
+		sinon.stub( Hydra.bus, "subscribe" );
 		this.oDeferred = new Hydra.deferred();
 	}
 	function teardownDeferred()
 	{
-		this.oAction.listen.restore();
-		Hydra.action.restore();
-		delete this.oAction;
+		Hydra.bus.subscribe.restore();
 		delete this.oDeferred;
 	}
 	TestCase( "HydraPromiseConstructorTest", sinon.testCase( {
@@ -94,10 +90,10 @@
 
 			assertSame( this.oResult, this.oPromise.oResult );
 		},
-		"test should call notify of Action one time": function () {
+		"test should call publish of Bus one time": function () {
 			this.oPromise.resolve( this.oResult );
 
-			assertEquals( 1, this.oPromise.oAction.notify.callCount );
+			assertEquals( 1, Hydra.bus.publish.callCount );
 		}
 	} ) );
 
@@ -125,10 +121,10 @@
 
 			assertSame( this.oResult, this.oPromise.oResult );
 		},
-		"test should call notify of Action one time": function () {
+		"test should call publish of Bus one time": function () {
 			this.oPromise.reject( this.oResult );
 
-			assertEquals( 1, this.oPromise.oAction.notify.callCount );
+			assertEquals( 1, Hydra.bus.publish.callCount );
 		}
 	} ) );
 
@@ -180,23 +176,15 @@
 			assertString( this.oDeferred.sType );
 			assertEquals( 0, this.oDeferred.sType.length );
 		},
-		"test should call Hydra.action one time": function () {
-			assertEquals( 1, Hydra.action.callCount );
+		"test should call subscribe in Bus one time": function () {
+			assertEquals( 1, Hydra.bus.subscribe.callCount );
 		},
-		"test should call listen in oAction one time": function () {
-			assertEquals( 1, this.oAction.listen.callCount );
+		"test should call the subscribe with the first argument is an string that starts with deferred_": function () {
+			assertString( Hydra.bus.subscribe.getCall( 0 ).args[0] );
+			assertEquals('deferred_' + this.oDeferred.nId, Hydra.bus.subscribe.getCall( 0 ).args[0]);
 		},
-		"test should call the listen with the first argument is an array with one element 'complete'": function () {
-			assertArray( this.oAction.listen.getCall( 0 ).args[0] );
-			assertEquals( "complete", this.oAction.listen.getCall( 0 ).args[0][0] );
-			assertUndefined( this.oAction.listen.getCall( 0 ).args[0][1] );
-		},
-		"test should call the listen with the second argument is checkCompleted method": function () {
-			assertArray( this.oAction.listen.getCall( 0 ).args[0] );
-			assertEquals( this.oDeferred.checkCompleted, this.oAction.listen.getCall( 0 ).args[1] );
-		},
-		"test should call the listen with the third argument is the same Deferred object": function () {
-			assertSame( this.oDeferred, this.oAction.listen.getCall( 0 ).args[2] );
+		"test should call the subscribe with the second argument is the same Deferred object": function () {
+			assertSame( this.oDeferred, Hydra.bus.subscribe.getCall( 0 ).args[1] );
 		}
 	} ) );
 
@@ -238,14 +226,14 @@
 			var bResult = true;
 			this.oDeferred.add( this.oPromise );
 
-			bResult = this.oDeferred.checkCompleted();
+			bResult = this.oDeferred.oEventsCallbacks['promise:complete'].call(this.oDeferred);
 
 			assertFalse( bResult );
 		},
 		"test should not call complete if oPromise is not completed": function () {
 			this.oDeferred.add( this.oPromise );
 
-			this.oDeferred.checkCompleted();
+			this.oDeferred.oEventsCallbacks['promise:complete'].call(this.oDeferred);
 
 			assertEquals( 0, this.oDeferred.complete.callCount );
 		},
@@ -253,7 +241,7 @@
 			this.oDeferred.add( this.oPromise );
 			this.oPromise.bCompleted = true;
 
-			this.oDeferred.checkCompleted();
+			this.oDeferred.oEventsCallbacks['promise:complete'].call(this.oDeferred);
 
 			assertEquals( 1, this.oDeferred.complete.callCount );
 		}
@@ -355,9 +343,7 @@
 
 	TestCase( "HydraDeferredThenTest", sinon.testCase( {
 		setUp: function () {
-			this.oAction = Hydra.action();
-			sinon.stub( this.oAction, "listen" );
-			sinon.stub( Hydra, "action" ).returns( this.oAction );
+			sinon.stub( Hydra.bus, "subscribe" );
 			this.oDeferred = new Hydra.deferred();
 			this.oPromise = new Hydra.promise();
 			sinon.spy( this.oDeferred.aPending, "push" );
@@ -365,8 +351,7 @@
 			this.fpOnError = function () {};
 		},
 		tearDown: function () {
-			this.oAction.listen.restore();
-			Hydra.action.restore();
+			Hydra.bus.subscribe.restore();
 			this.oDeferred.aPending.push.restore();
 		},
 		"test should call push method of aPending one time": function () {

@@ -1,4 +1,5 @@
 # Deferred
+# Updated to version 2.0 now using Bus instead of Action
 Is an object that allow users to assign callback functions for success and error conditions for a task that may not complete immediately. The callbacks in Deferred object are only called when all the conditions are resolved successfully.
 # Promise
 Deferred object delegates the resolution of the conditions to the Promise objects.

@@ -1,0 +1,4 @@
+2.0.0
+	Adapt Deferred and promise to use Bus instead of Action
+1.0.0
+	First revision

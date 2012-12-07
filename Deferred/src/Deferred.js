@@ -1,7 +1,15 @@
 (function ( Hydra ) {
 	'use strict';
 	var Deferred, Promise, When, reResolve, _false_, _true_, _null_, slice;
-
+	/**
+	 * Used to generate an unique key for instance ids that are not supplied by the user.
+	 * @return {String}
+	 */
+	function generateUniqueKey () {
+		var sFirstToken = +new Date() + '',
+			sSecondToken = Math.floor( Math.random() * (999999 - 1 + 1) ) + 1;
+		return sFirstToken + '_' + sSecondToken;
+	}
 	/**
 	 * Converts objects like node list to real array.
 	 * @private
@@ -44,12 +52,13 @@
 	 * @name Promise
 	 */
 	Promise = function () {
+		this.nIdDeferred = -1;
 		// Pending callbacks
 		this.aPending = [];
 		this.bCompleted = _false_;
 		this.sType = '';
 		this.oResult = _null_;
-		this.oAction = Hydra.action();
+		this.oBus = Hydra.bus;
 
 		// Must be called when something finished successfully
 		this.resolve = (function ( oContext ) {
@@ -57,7 +66,7 @@
 				oContext.bCompleted = _true_;
 				oContext.sType = 'resolve';
 				oContext.oResult = oResult;
-				oContext.oAction.notify( {type: 'complete'} );
+				oContext.oBus.publish('deferred_'+ oContext.nIdDeferred, 'promise:complete', null);
 			};
 		}( this ));
 		// Must be called when something fails
@@ -66,7 +75,7 @@
 				oContext.bCompleted = _true_;
 				oContext.sType = 'reject';
 				oContext.oResult = oResult;
-				oContext.oAction.notify( {type: 'complete'} );
+				oContext.oBus.publish('deferred_'+ oContext.nIdDeferred, 'promise:complete', null);
 			};
 		}( this ));
 	};
@@ -91,11 +100,37 @@
 	 * @name Deferred
 	 */
 	Deferred = function () {
+		this.oEventsCallbacks = {
+			/**
+			 * This method is called when any Promise object notify 'complete'
+			 * Checks the completion of all the Promise objects.
+			 * If any of the Promises is not complete continue waiting.
+			 * If all the Promises are complete then complete method is executed.
+			 */
+			'promise:complete': function () {
+				var nPromise, nLenPromise, oPromise;
+				nLenPromise = this.aPromises.length;
+				oPromise = _null_;
+
+				for ( nPromise = 0; nPromise < nLenPromise; nPromise++ ) {
+					oPromise = this.aPromises[nPromise];
+					if ( !oPromise.bCompleted ) {
+						return _false_;
+					}
+				}
+				this.complete( this.getType() );
+
+				nPromise = _null_;
+				nLenPromise = _null_;
+				oPromise = _null_;
+			}
+		};
+		this.nId = generateUniqueKey();
 		this.aPromises = [];
 		this.aPending = [];
 		this.sType = '';
-		this.oAction = Hydra.action();
-		this.oAction.listen( ['complete'], this.checkCompleted, this );
+		this.oBus = Hydra.bus;
+		this.oBus.subscribe('deferred_'+ this.nId, this);
 	};
 
 	Deferred.prototype = {
@@ -106,32 +141,9 @@
 		 * @return {Object} Deferred instance
 		 */
 		add: function ( oPromise ) {
+			oPromise.nIdDeferred = this.nId;
 			this.aPromises.push( oPromise );
 			return this;
-		},
-		/**
-		 * This method is called when any Promise object notify 'complete'
-		 * Checks the completion of all the Promise objects.
-		 * If any of the Promises is not complete continue waiting.
-		 * If all the Promises are complete then complete method is executed.
-		 * @member Deferred.prototype
-		 */
-		checkCompleted: function () {
-			var nPromise, nLenPromise, oPromise;
-			nLenPromise = this.aPromises.length;
-			oPromise = _null_;
-
-			for ( nPromise = 0; nPromise < nLenPromise; nPromise++ ) {
-				oPromise = this.aPromises[nPromise];
-				if ( !oPromise.bCompleted ) {
-					return _false_;
-				}
-			}
-			this.complete( this.getType() );
-
-			nPromise = _null_;
-			nLenPromise = _null_;
-			oPromise = _null_;
 		},
 		/**
 		 * Return the type of completion [reject, resolve]
