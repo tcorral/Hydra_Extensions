@@ -179,12 +179,8 @@
 		"test should call subscribe in Bus one time": function () {
 			assertEquals( 1, Hydra.bus.subscribe.callCount );
 		},
-		"test should call the subscribe with the first argument is an string that starts with deferred_": function () {
-			assertString( Hydra.bus.subscribe.getCall( 0 ).args[0] );
-			assertEquals('deferred_' + this.oDeferred.nId, Hydra.bus.subscribe.getCall( 0 ).args[0]);
-		},
 		"test should call the subscribe with the second argument is the same Deferred object": function () {
-			assertSame( this.oDeferred, Hydra.bus.subscribe.getCall( 0 ).args[1] );
+			assertSame( this.oDeferred, Hydra.bus.subscribe.getCall( 0 ).args[0] );
 		}
 	} ) );
 
@@ -225,15 +221,15 @@
 		"test should return false if oPromise is not completed": function () {
 			var bResult = true;
 			this.oDeferred.add( this.oPromise );
-
-			bResult = this.oDeferred.oEventsCallbacks['promise:complete'].call(this.oDeferred);
+debugger;
+			bResult = this.oDeferred.events['deferred_'+ this.oDeferred.nId]['promise:complete'].call(this.oDeferred);
 
 			assertFalse( bResult );
 		},
 		"test should not call complete if oPromise is not completed": function () {
 			this.oDeferred.add( this.oPromise );
 
-			this.oDeferred.oEventsCallbacks['promise:complete'].call(this.oDeferred);
+			this.oDeferred.events['deferred_'+ this.oDeferred.nId]['promise:complete'].call(this.oDeferred);
 
 			assertEquals( 0, this.oDeferred.complete.callCount );
 		},
@@ -241,7 +237,7 @@
 			this.oDeferred.add( this.oPromise );
 			this.oPromise.bCompleted = true;
 
-			this.oDeferred.oEventsCallbacks['promise:complete'].call(this.oDeferred);
+			this.oDeferred.events['deferred_'+ this.oDeferred.nId]['promise:complete'].call(this.oDeferred);
 
 			assertEquals( 1, this.oDeferred.complete.callCount );
 		}

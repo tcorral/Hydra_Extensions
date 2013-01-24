@@ -100,40 +100,49 @@
 	 * @name Deferred
 	 */
 	Deferred = function () {
-		this.oEventsCallbacks = {
-			/**
-			 * This method is called when any Promise object notify 'complete'
-			 * Checks the completion of all the Promise objects.
-			 * If any of the Promises is not complete continue waiting.
-			 * If all the Promises are complete then complete method is executed.
-			 */
-			'promise:complete': function () {
-				var nPromise, nLenPromise, oPromise;
-				nLenPromise = this.aPromises.length;
-				oPromise = _null_;
+        this.nId = generateUniqueKey();
+		this.events = {};
+        this.events['deferred_'+ this.nId] = {
+            /**
+             * This method is called when any Promise object notify 'complete'
+             * Checks the completion of all the Promise objects.
+             * If any of the Promises is not complete continue waiting.
+             * If all the Promises are complete then complete method is executed.
+             */
+            'promise:complete': function () {
+                var nPromise, nLenPromise, oPromise;
+                nLenPromise = this.aPromises.length;
+                oPromise = _null_;
 
-				for ( nPromise = 0; nPromise < nLenPromise; nPromise++ ) {
-					oPromise = this.aPromises[nPromise];
-					if ( !oPromise.bCompleted ) {
-						return _false_;
-					}
-				}
-				this.complete( this.getType() );
+                for ( nPromise = 0; nPromise < nLenPromise; nPromise++ ) {
+                    oPromise = this.aPromises[nPromise];
+                    if ( !oPromise.bCompleted ) {
+                        return _false_;
+                    }
+                }
+                this.complete( this.getType() );
 
-				nPromise = _null_;
-				nLenPromise = _null_;
-				oPromise = _null_;
-			}
-		};
-		this.nId = generateUniqueKey();
+                nPromise = _null_;
+                nLenPromise = _null_;
+                oPromise = _null_;
+            }
+        };
 		this.aPromises = [];
 		this.aPending = [];
 		this.sType = '';
 		this.oBus = Hydra.bus;
-		this.oBus.subscribe('deferred_'+ this.nId, this);
+		this.oBus.subscribe(this);
 	};
 
 	Deferred.prototype = {
+        /**
+         * destroy method to remove all the subscriptions
+         * @param oPromise
+         * @return {*}
+         */
+        destroy: function(){
+            this.oBus.unsubscribe(this);
+        },
 		/**
 		 * Adds a new Promise object to the array of Promise object that are needed to be completed.
 		 * @member Deferred.prototype
