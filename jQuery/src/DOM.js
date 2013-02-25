@@ -18,19 +18,18 @@
 		/**
 		 * Get element by Id
 		 * @param {String} sId
-		 * @param {Element} oContext
 		 * @param {Boolean} bBasicNode if true the element will be a DOM element, if false the element will be a jQuery object
 		 * @return {Node/jQuery}
 		 */
-		byId: function(sId, oContext, bBasicNode)
-		{
-			var $NodeList = find("#" + sId, oContext);
-			if(bBasicNode)
-			{
-				return $NodeList[0] || null;
-			}
-			return $NodeList;
-		},
+		byId: function(sId, bBasicNode)
+    {
+      var oNode = document.getElementById(sId);
+      if(bBasicNode)
+      {
+        return oNode || null;
+      }
+      return $(oNode);
+    },
 		/**
 		 * Return elements that have the classname provided as argument
 		 * @param {String} sClassName

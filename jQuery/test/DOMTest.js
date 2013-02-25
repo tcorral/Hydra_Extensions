@@ -6,14 +6,14 @@
 		'test should check that byId with bBasicNode set as true returns a DOM element': function () {
 			/*:DOC+= <div id='test'></div>*/
 			var oElement = doc.getElementById( "test" ),
-				oNewElement = Hydra.dom.byId( 'test', doc, true );
+				oNewElement = Hydra.dom.byId( 'test', true );
 
 			assertSame( oElement, oNewElement );
 		},
 		'test should check that byId with bBasicNode set as false return a jQuery element': function () {
 			/*:DOC+= <div id='test'></div>*/
 			var oElement = doc.getElementById( "test" ),
-				$Element = Hydra.dom.byId( 'test', doc );
+				$Element = Hydra.dom.byId( 'test', false );
 
 			assertEquals(1, $Element.length);
 			assertEquals( oElement, $Element.get( 0 ) );
