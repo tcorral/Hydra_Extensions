@@ -4,19 +4,20 @@
     <title></title>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="http://requirejs.org/docs/release/2.1.6/minified/require.js"></script>
-    <script type="text/javascript" src="../libs/Hydra.js"></script>
-    <script type="text/javascript" src="/Dependencies/src/Dependencies.js"></script>
+    <script type="text/javascript" src="https://raw.github.com/tcorral/Hydra.js/master/src/Hydra.js"></script>
+    <script type="text/javascript" src="src/Dependencies.js"></script>
     <script type="text/javascript">
         var basePathConfig = {
-            example: '/Dependencies/example.js',
-            example2: '/Dependencies/example2.js',
-            example3: '/Dependencies/example3.js'
+            example: 'example.js',
+            example2: 'example2.js',
+            example3: 'example3.js'
         };
     </script>
 </head>
 <body id="example">
     <script type="text/javascript">
         $(document).ready(function(){
+            Hydra.setPathsObject(basePathConfig);
             require([basePathConfig[document.body.id]]);
         });
     </script>
