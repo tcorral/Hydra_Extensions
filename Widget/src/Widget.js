@@ -4,7 +4,7 @@
   injectJquery = function(callback) {
     if(typeof jQuery === 'undefined'){
       var script = document.createElement("script");
-      var head = document.getElementsByTagName('head')[0]
+      var head = document.getElementsByTagName('head')[0];
       script.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js";
       /* If you need callback */
       script.onload = script.onreadystatechange = callback || function(){ };

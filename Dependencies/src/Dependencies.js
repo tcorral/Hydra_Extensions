@@ -1,6 +1,5 @@
 (function(Hydra){
-  var module, start, injectRequireJS, getPaths, getDatas;
-
+  var module, start, getPaths, getDatas;
   getPaths = function(arr){
     var paths = [],
       index,
