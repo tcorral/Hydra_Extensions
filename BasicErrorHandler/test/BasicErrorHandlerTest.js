@@ -1,8 +1,9 @@
 (function(win, doc, Hydra){
 	'use strict';
-	var oBody = doc.body;
+  var oBody;
 	function setup(oTest)
 	{
+    oBody = doc.body;
 		oBody.innerHTML = '';
 		Hydra.errorHandler().list = null;
 		oTest.nChilds = oBody.childNodes.length;
