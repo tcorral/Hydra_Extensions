@@ -221,7 +221,6 @@
 		"test should return false if oPromise is not completed": function () {
 			var bResult = true;
 			this.oDeferred.add( this.oPromise );
-debugger;
 			bResult = this.oDeferred.events['deferred_'+ this.oDeferred.nId]['promise:complete'].call(this.oDeferred);
 
 			assertFalse( bResult );

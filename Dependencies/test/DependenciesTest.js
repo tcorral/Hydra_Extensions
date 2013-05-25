@@ -29,7 +29,6 @@
           }
         }
       });
-      debugger;
       Hydra.module.start('example');
       assertEquals(1, win.require.callCount);
     }
