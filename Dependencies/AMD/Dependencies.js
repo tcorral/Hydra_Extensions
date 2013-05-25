@@ -1,4 +1,5 @@
-(function (Hydra) {
+define(['hydra'], function (Hydra) {
+  'use strict';
   var getPaths, getDatas, oPaths;
   getPaths = function (arr) {
     var paths = [],
@@ -50,4 +51,4 @@
     oPaths = oPathsObject;
     return this;
   });
-}(Hydra));
+});
