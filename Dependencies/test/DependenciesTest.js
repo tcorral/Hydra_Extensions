@@ -63,7 +63,7 @@
   TestCase('HydraDependencies_SetPathsObject', sinon.testCase({
     setUp: function(){
       Hydra.setPathsObject({
-        example2: 'example2.js'
+        example2: 'http://requirejs.org/docs/release/2.1.6/comments/require.js'
       });
     },
     tearDown: function(){},
@@ -73,13 +73,13 @@
     'test should check that setPathsObject stores the object passed as argument': function(){
 
       var result = Hydra.getPathsObject();
-      assertEquals('example2.js', result.example2);
+      assertEquals('http://requirejs.org/docs/release/2.1.6/comments/require.js', result.example2);
     }
   }));
   TestCase('HydraDependencies_GetPathObject', sinon.testCase({
     setUp: function(){
       Hydra.setPathsObject({
-        example3: 'example3.js'
+        example3: 'http://requirejs.org/docs/release/2.1.6/comments/require.js'
       });
     },
     tearDown: function(){
@@ -90,7 +90,7 @@
     },
     'test should check that Hydra.getPathsObject return the correct paths': function(){
       var result = Hydra.getPathsObject();
-      assertEquals('example3.js', result.example3);
+      assertEquals('http://requirejs.org/docs/release/2.1.6/comments/require.js', result.example3);
     }
   }));
 }(window, document, Hydra));
