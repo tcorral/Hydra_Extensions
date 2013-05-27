@@ -1,16 +1,14 @@
 (function (win, doc, Hydra) {
   'use strict';
-  var req;
   TestCase('HydraDependencies_starting_module', sinon.testCase({
     setUp: function(){
-      req = win.require;
-      win.require = sinon.stub();
+      sinon.spy(win, 'require');
       Hydra.setPathsObject({
-        example: 'example.js'
+        example: 'http://requirejs.org/docs/release/2.1.6/comments/require.js'
       });
     },
     tearDown: function(){
-      win.require = req;
+      win.require.restore();
       Hydra.module.remove('example');
     },
     'test should check that Hydra.module.oModifyInit has the key dependencies': function(){
@@ -38,7 +36,7 @@
       this.dependencies = Hydra.module.oModifyInit.dependencies;
       Hydra.module.oModifyInit.dependencies = sinon.stub();
       Hydra.setPathsObject({
-        example: 'libs/require.js'
+        example: 'http://requirejs.org/docs/release/2.1.6/comments/require.js'
       });
     },
     tearDown: function(){
