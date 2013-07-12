@@ -1,29 +1,46 @@
-# Backbone wrapper
-"Backbone.js gives structure to web applications by providing models with key-value binding and custom events, collections with a rich API of enumerable functions, views with declarative event handling, and connects it all to your existing API over a RESTful JSON interface."
-description in Backbone official [web](http://backbonejs.org/).
-# Backbone wrapper as Hydra.js extension
-This is only a wrapper to use Backbone object from inside Hydra.js.
-### Requirements
-You will need to load it after Backbone.js and Hydra.js in your code.
-Remember that Backbone.js has some dependencies as:
+# Profiler
+This plugin has been created to know how many events are consumed and how many modules are initialized.
 
-* jQuery
-* underscore
+### Requirements
+Nothing more than Hydra.js version >= 3.2.0
 
 ### Add it in your application
-We have created Backbone wrapper to be used with and without require.js
+We have created Profiler to be used with and without require.js
 #### Simple
 	<script type="text/javascript" src="Hydra.js"></script>
-	<script type="text/javascript" src="jQuery.js"></script>
-	<script type="text/javascript" src="underscore.js"></script>
-	<script type="text/javascript" src="backbone.js"></script>
-	<!-- wrapper -->
-	<script type="text/javascript" src="Backbone.js"></script>
+	<!-- profiler -->
+	<script type="text/javascript" src="Profiler.js"></script>
 #### Using require.js
-	require('backbone_hydra_wrapper');
+	require('profiler_hydra');
 # Usage
-Hydra.backbone is a wrapper for Backbone object and you can use it as you would if you used Backbone.js original object.
-## Documentation
-[See original documentation](http://backbonejs.org/)
+Profiler has two different methods that could be used to know the sanity of your Hydra.js application.
+
+#### subscribersCount
+This method accepts an optional argument. This argument is a boolean value, if this argument is true it will return an object else it will return a number.
+##### With argument equals to true
+	Hydra.profiler.subscribersCount(true);
+###### It will return something like
+	{
+		'channel|event': 10 // This number is the number of subscribers that these event has.
+		TOTAL: 10
+	}
+#### Without argument or with arguments equals to false
+	Hydra.profiler.subscribersCount();
+##### It will return a number
+	10
+
+#### modulesCount:
+This method accepts an optional argument. This argument is a boolean value, if this argument is true it will return an object else it will return a number.
+##### With argument equals to true
+	Hydra.profiler.modulesCount(true);
+###### It will return something like
+	{
+		'module_name': { "instances": {'id_instance_1': { ... } },
+		TOTAL: 1
+	}
+##### Without argument or with arguments equals to false
+	Hydra.profiler.modulesCount();
+###### It will return a number
+	1
 # License
-Backbone wrapper as Hydra.js extensions is licensed under MIT license. (see LICENSE file)
+Profiler as Hydra.js extensions is licensed under MIT license. (see LICENSE file)
