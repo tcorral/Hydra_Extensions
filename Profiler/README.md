@@ -44,3 +44,5 @@ This method accepts an optional argument. This argument is a boolean value, if t
 	1
 # License
 Profiler as Hydra.js extensions is licensed under MIT license. (see LICENSE file)
+# Author
+MeZKaL
