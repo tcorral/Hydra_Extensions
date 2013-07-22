@@ -16,4 +16,4 @@ BasicErrorHandler usage is used 'only' internally by Hydra.js.
 To create another ErrorHandler you  need an object with a 'log' and 'error' method.
 
 # License
-Deferred, Promise and When as Hydra.js extensions are licensed under MIT license. (see LICENSE file)
+BasicErrorHandler as Hydra.js extensions are licensed under MIT license. (see LICENSE file)
