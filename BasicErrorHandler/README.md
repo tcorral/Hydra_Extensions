@@ -13,7 +13,7 @@ We have created BasicErrorHandler to be used with and without require.js
 	require('basicErrorHandler');
 # Usage
 BasicErrorHandler usage is used 'only' internally by Hydra.js.
-To create another ErrorHandler you only need an object with a 'log' method.
+To create another ErrorHandler you  need an object with a 'log' and 'error' method.
 
 # License
 Deferred, Promise and When as Hydra.js extensions are licensed under MIT license. (see LICENSE file)

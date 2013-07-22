@@ -16,8 +16,89 @@
 		delete oTest.nDivs;
 		delete oTest.nLists;
 	}
+  TestCase('HydraErrorHandlerError_ExistingConsoleErrorTest', sinon.testCase({
+    setUp: function(){
 
-	TestCase( "HydraErrorHandlerCreateDomTest", sinon.testCase( {
+    },
+    tearDown: function(){
+      Hydra.errorHandler().list = null;
+    },
+    'test should check that if console.error exist it will not add elements to list': function(){
+      var sModuleId = 'test_module',
+        sMethod = 'testmethod',
+        erError = {
+          message: 'testmessage'
+        },
+        errorHandler = Hydra.errorHandler();
+      errorHandler.error(sModuleId, sMethod, erError);
+
+      assertNull( Hydra.errorHandler().list );
+    }
+  }));
+  TestCase("HydraErrorHandlerLog_MissingConsoleErrorTest", sinon.testCase({
+    setUp: function(){
+      this.consoleError = console.error;
+      console.error = undefined;
+    },
+    tearDown: function(){
+      console.error = this.consoleError;
+      delete this.consoleError;
+      Hydra.errorHandler().list = null;
+    },
+    'test should check that if console.error does not exist it add new elements to list': function(){
+      var sModuleId = 'test1module',
+        sMethod = 'testmethod',
+        erError = {
+          message: 'testmessage'
+        },
+        errorHandler = Hydra.errorHandler();
+      assertNull( Hydra.errorHandler().list );
+      errorHandler.error(sModuleId, sMethod, erError);
+
+      assertTagName( "UL", Hydra.errorHandler().list );
+    }
+  }));
+  TestCase("HydraErrorHandlerError_ExistingConsoleLogTest", sinon.testCase({
+    setUp: function(){
+    },
+    tearDown: function(){
+      Hydra.errorHandler().list = null;
+    },
+    'test should check that if console.log exist it will not add elements to list': function(){
+      var sModuleId = 'test_module',
+        sMethod = 'testmethod',
+        erError = {
+          message: 'testmessage'
+        },
+        errorHandler = Hydra.errorHandler();
+      errorHandler.log(sModuleId, sMethod, erError);
+
+      assertNull( Hydra.errorHandler().list );
+    }
+  }));
+  TestCase("HydraErrorHandlerLog_MissingConsoleLogTest", sinon.testCase({
+    setUp: function(){
+      this.consoleLog = console.log;
+      console.log = undefined;
+    },
+    tearDown: function(){
+      console.log = this.consoleLog;
+      delete this.consoleLog;
+    },
+    'test should check that if console.log does not exist it add new elements to list': function(){
+      var sModuleId = 'test1module',
+        sMethod = 'testmethod',
+        erError = {
+          message: 'testmessage'
+        },
+        errorHandler = Hydra.errorHandler();
+      assertNull( Hydra.errorHandler().list );
+      errorHandler.log(sModuleId, sMethod, erError);
+
+      assertTagName( "UL", Hydra.errorHandler().list );
+    }
+  }));
+  TestCase( "HydraErrorHandlerCreateDomTest", sinon.testCase( {
 		setUp: function()
 		{
 			setup(this);
@@ -128,4 +209,5 @@
 			assertEquals( 2, aLiItems.length );
 		}
 	} ) );
+
 }(window, document, Hydra));
