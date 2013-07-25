@@ -1,3 +1,5 @@
+2.0.1
+	Fix bug when executing resolve or reject in Promises to send the oResults info to the Deferred object.
 2.0.0
 	Adapt Deferred and promise to use Bus instead of Action
 1.0.0

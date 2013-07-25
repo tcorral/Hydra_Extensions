@@ -191,7 +191,7 @@
 		 * @param {String} sType
 		 */
 		complete: function ( sType ) {
-			var nPromise, nLenPromises, oPromise;
+			var nPromise, nLenPromises, oPromise, oPending, aResults = [];
 			if ( sType.length === 0 ) {
 				return _false_;
 			}
@@ -199,12 +199,14 @@
 
 			for ( nPromise = 0; nPromise < nLenPromises; nPromise++ ) {
 				oPromise = this.aPromises[nPromise];
+				aResults.push(oPromise.oResult);
 				while ( oPromise.aPending[0] ) {
 					oPromise.aPending.shift()[sType]( oPromise.oResult );
 				}
 			}
 			while ( this.aPending[0] ) {
-				this.aPending.shift()[sType]();
+				oPending = this.aPending.shift();
+				oPending[sType].apply(oPending, aResults);
 			}
 
 			nPromise = _null_;
