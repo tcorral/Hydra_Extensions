@@ -5,6 +5,26 @@
   var root, sNotDefined, oModules, oVars, _null_, bUnblockUI, _false_, sVersion, FakeModule, Hydra, bDebug, ErrorHandler, Module, Bus, oChannels, isNodeEnvironment, oObjProto;
 
   /**
+   * Use Event detection and if it fails it degradates to use duck typing detection to test if the supplied object is an Event
+   * @param oObj
+   * @returns {boolean}
+   */
+  function isEvent( oObj )
+  {
+    try
+    {
+      return oObj instanceof Event;
+    }catch( erError )
+    {
+      // Duck typing detection (If it sounds like a duck and it moves like a duck, it's a duck)
+      if( typeof oObj.altKey !== 'undefined' && ( oObj.srcElement || oObj.target ) )
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
    * nullFunc
    * An empty function to be used as default is no supplied callbacks.
    * @private
@@ -19,7 +39,7 @@
   function generateUniqueKey()
   {
     var sFirstToken = +new Date() + '',
-      sSecondToken = Math.floor( Math.random() * (999999 - 1 + 1) ) + 1;
+    sSecondToken = Math.floor( Math.random() * (999999 - 1 + 1) ) + 1;
     return sFirstToken + '_' + sSecondToken;
   }
 
@@ -120,7 +140,7 @@
    * @type {String}
    * @private
    */
-  sVersion = '3.1.5';
+  sVersion = '3.3.1';
 
   /**
    * Used to activate the debug mode
@@ -270,6 +290,10 @@
         oInstance.init();
       }
     }
+    else
+    {
+      ErrorHandler.error(new Error(), 'The module ' + sModuleId + ' is not registered in the system');
+    }
     return oInstance;
   }
 
@@ -299,7 +323,12 @@
   function clone(oObject) {
     var oCopy, oItem, nIndex, nLenArr, sAttr;
     // Handle the 3 simple types, and null or undefined
-    if (null == oObject || "object" != typeof oObject){
+    if (null == oObject || 'object' !== typeof oObject){
+      return oObject;
+    }
+
+    if ( isEvent( oObject ) )
+    {
       return oObject;
     }
 
@@ -332,7 +361,7 @@
       return oCopy;
     }
 
-    throw new Error("Unable to copy obj! Its type isn't supported.");
+    throw new Error('Unable to copy obj! Its type isn\'t supported.');
   }
 
   /**
@@ -357,7 +386,7 @@
         }
         catch ( erError )
         {
-          ErrorHandler.log( sModuleId, sName, erError );
+          ErrorHandler.error( sModuleId, sName, erError );
           return false;
         }
       };
@@ -383,7 +412,7 @@
   function subscribersByEvent( oChannel, sEventName )
   {
     var aSubscribers = [],
-      sEvent;
+    sEvent;
     if ( typeof oChannel !== 'undefined' )
     {
       for ( sEvent in oChannel )
@@ -466,8 +495,8 @@
     unsubscribeFrom: function ( sChannelId, sEventType, oSubscriber )
     {
       var aChannelEvents = this._getChannelEvents( sChannelId, sEventType ),
-        oItem,
-        nEvent = aChannelEvents.length - 1;
+      oItem,
+      nEvent = aChannelEvents.length - 1;
 
       for ( ; nEvent >= 0; nEvent-- )
       {
@@ -532,18 +561,14 @@
      */
     _removeSubscribers: function ( aSubscribers, oSubscriber )
     {
-      var nLenSubscribers,
-        nIndex = 0,
-        nUnsubscribed = 0;
-      if ( typeof aSubscribers !== sNotDefined )
-      {
-        nLenSubscribers = aSubscribers.length;
-        for ( ; nIndex < nLenSubscribers; nIndex++ )
-        {
-          if ( aSubscribers[nIndex].subscriber === oSubscriber )
-          {
+      var nUnsubscribed = 0,
+      nIndex;
+      if (typeof aSubscribers !== sNotDefined) {
+        nIndex = aSubscribers.length - 1;
+        for (; nIndex >= 0 ; nIndex--) {
+          if (aSubscribers[nIndex].subscriber === oSubscriber) {
             nUnsubscribed++;
-            aSubscribers.splice( nIndex, 1 );
+            aSubscribers.splice(nIndex, 1);
           }
         }
       }
@@ -620,7 +645,7 @@
     _avoidBlockUI: function ( aSubscribers, oData, sChannelId, sEvent )
     {
       var oHandlerObject,
-        aSubs = aSubscribers.concat();
+      aSubs = aSubscribers.concat();
       setTimeout( function recall()
       {
         var nStart = +new Date();
@@ -649,27 +674,25 @@
      */
     publish: function ( sChannelId, sEvent, oData )
     {
-      var aSubscribers = this.subscribers( sChannelId, sEvent ).slice(),
-        nLenSubscribers = aSubscribers.length,
-        nIndex,
-        oHandlerObject;
-      if ( nLenSubscribers === 0 )
-      {
+      var aSubscribers = this.subscribers(sChannelId, sEvent ).slice(),
+      nLenSubscribers = aSubscribers.length,
+      nIndex = 0,
+      oHandlerObject,
+      oDataToPublish;
+      if (nLenSubscribers === 0) {
         return false;
       }
-      if ( bUnblockUI )
+      oDataToPublish = clone(oData);
+      if(bUnblockUI)
       {
-        this._avoidBlockUI( aSubscribers, oData, sChannelId, sEvent );
-      }
-      else
+        this._avoidBlockUI(aSubscribers, oDataToPublish, sChannelId, sEvent);
+      }else
       {
-        for ( nIndex = 0; nIndex < nLenSubscribers; nIndex++ )
-        {
+        for ( ; nIndex < nLenSubscribers; nIndex++ ) {
           oHandlerObject = aSubscribers[nIndex];
-          oHandlerObject.handler.call( oHandlerObject.subscriber, oData );
-          if ( bDebug )
-          {
-            ErrorHandler.log( sChannelId, sEvent, oHandlerObject );
+          oHandlerObject.handler.call( oHandlerObject.subscriber, oDataToPublish );
+          if (bDebug) {
+            ErrorHandler.log(sChannelId, sEvent, oHandlerObject);
           }
         }
       }
@@ -696,17 +719,18 @@
   function addPropertiesAndMethodsToModule( sModuleId, Bus )
   {
     var oModule,
-      fpInitProxy;
+    fpInitProxy;
     oModule = oModules[sModuleId].creator( Bus );
     oModule.__module_id__ = sModuleId;
     fpInitProxy = oModule.init || nullFunc;
-    oModule.__action__ = Bus;
+    // Provide compatibility with old versions of Hydra.js
+    oModule.__action__ = oModule.__sandbox__ = Bus;
     oModule.events = oModule.events || {};
     oModule.init = function ()
     {
       var aArgs = slice( arguments, 0 ).concat( oVars );
       Bus.subscribe( oModule );
-      fpInitProxy.apply( this, aArgs );
+      return fpInitProxy.apply( this, aArgs );
     };
     oModule.handleAction = function ( oNotifier )
     {
@@ -717,12 +741,13 @@
       }
       fpCallback.call( this, oNotifier );
     };
-    oModule.onDestroy = oModule.onDestroy || nullFunc;
+    // Provide compatibility with old Hydra versions which used to use "destroy" as onDestroy hook.
+    oModule.onDestroy = oModule.onDestroy || oModule.destroy || function () {};
     oModule.destroy = function ()
     {
       this.onDestroy();
       Bus.unsubscribe( oModule );
-      delete oModules[sModuleId].instances[module.__instance_id__];
+      delete oModules[sModuleId].instances[oModule.__instance_id__];
     };
     return oModule;
   }
@@ -761,6 +786,9 @@
    */
   ErrorHandler = root.console || {
     log: function ()
+    {
+    },
+    error: function ()
     {
     }
   };
@@ -835,7 +863,7 @@
         {
           oObject = oObject.__instance__.__super__;
         }
-        oObject[sKey].apply( oFinalModule, aArgs );
+        return oObject[sKey].apply( oFinalModule, aArgs );
       };
     },
 
@@ -961,7 +989,8 @@
         // create proxy class for the original methods.
         oFinalModule = self._merge( oBaseModule, oExtendedModule );
         // This gives access to the Action instance used to listen and notify.
-        oFinalModule.__action__ = Bus;
+        // __sandbox__ for adding retrocompatibility
+        oFinalModule.__action__ = oFinalModule.__sandbox__ = Bus;
         return oFinalModule;
       } );
       return oModules[sFinalModuleId];
@@ -1090,7 +1119,31 @@
         this._singleModuleStart( oModuleId, oIdInstance, oData, oSingle );
       }
     },
-
+    /**
+     * Method to decorate modules instead of extend
+     * @param sModuleId
+     * @param sModuleDecorated
+     * @param fpDecorator
+     * @returns {null}
+     */
+    decorate: function(sModuleId, sModuleDecorated, fpDecorator)
+    {
+      var oModule = oModules[sModuleId], oInstance;
+      if(!oModule)
+      {
+        ErrorHandler.log( sModuleId + ' module is not registered!' );
+        return null;
+      }
+      oInstance = createInstance( sModuleId );
+      oModules[sModuleDecorated] = {
+        creator: function( oBus )
+        {
+          return fpDecorator(oBus, oInstance);
+        }
+      };
+      oModules[sModuleDecorated].instances = [];
+      return new FakeModule( sModuleDecorated, oModules[sModuleDecorated].creator );
+    },
     /**
      * Checks if module was already successfully started
      * @member Module.prototype
@@ -1141,8 +1194,8 @@
     _multiModuleStop: function ( oModule )
     {
       var sKey,
-        oInstances = oModule.instances,
-        oInstance;
+      oInstances = oModule.instances,
+      oInstance;
       for ( sKey in oInstances )
       {
         if ( ownProp( oInstances, sKey ) )
