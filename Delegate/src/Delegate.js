@@ -68,11 +68,11 @@
           aNodeList = getArray( oNodeList );
           while( oTarget !== document )
           {
-            oTarget = oTarget.parentNode;
             if( aNodeList.indexOf( oTarget ) !== -1 )
             {
               break;
             }
+            oTarget = oTarget.parentNode;
           }
           if( oTarget === document && sSelector !== 'document' )
           {
