@@ -1,2 +1,5 @@
+1.0.1
+    Fix issue attaching events in a loop.
+    Fix check for node on loop for parent.
 1.0.0
 	First revision

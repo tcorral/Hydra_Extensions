@@ -103,10 +103,12 @@
               sBusEvent = 'document:' + sEvent;
               if ( Hydra.events.delegated[sBusEvent] !== true )
               {
-                addEvent( document, sEvent, function( eEvent )
-                {
-                  oBus.publish( sBusChannel, sBusEvent, eEvent );
-                } );
+                (function(sEv, sBusEv){
+                  addEvent( document, sEv, function( eEvent )
+                  {
+                    oBus.publish( sBusChannel, sBusEv, eEvent );
+                  } );
+                }(sEvent, sBusEvent));
                 Hydra.events.delegated[sBusEvent] = true;
               }
               oBus.subscribeTo( sBusChannel, sBusEvent, this._getDelegatedCallback( sEvent, sSelector, oDomEvents[sKey] ), this );
