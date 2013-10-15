@@ -17,7 +17,7 @@ We have created Delegate to be used with and without require.js
 ### Using require.js
 	require('utilities/events', 'utilities/array_indexOf', 'utilities/nodelist_to_array', 'delegate');
 #Usage
-To use Delegate you only need to extend or decorate the 'delegate-base-module'. See extend and decorate docs in [http://tcorral.github.io/Hydra.js/#documentation].
+To use Delegate you only need to extend the 'delegate-base-module'. See extend docs in [http://tcorral.github.io/Hydra.js/#documentation].
 ## Extending 'delegate-base-module'
 	Hydra.module.extend( 'delegate-base-module', 'new-module-with-delegation', function ( oBus )
 	{
@@ -37,28 +37,6 @@ To use Delegate you only need to extend or decorate the 'delegate-base-module'. 
 			{
 				// Some stop code.
 				this.__super__.__call__('onDestroy');	// Needed to execute the unbind of events.
-			}
-		};
-	} );
-## Decorating 'delegate-base-module'
-	Hydra.module.decorate( 'delegate-base-module', 'new-module-with-delegation', function ( oBus, oModule )
-	{
-		return {
-			domEvents: {
-				'click .test': function ( eEvent )
-				{
-					//The context of this function is the element that we expect trigger the event.
-				}
-			},
-			init: function ()
-			{
-				oModule.init();		// Needed to execute the delegation of events.
-				// Some start code.
-			},
-			onDestroy: function ()
-			{
-				// Some stop code.
-				oModule.onDestroy();	// Needed to execute the unbind of events.
 			}
 		};
 	} );
