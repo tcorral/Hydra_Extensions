@@ -1,0 +1,4 @@
+1.1.0
+    Add dependency injection to improve the testability of modules.
+1.0.0
+	First revision

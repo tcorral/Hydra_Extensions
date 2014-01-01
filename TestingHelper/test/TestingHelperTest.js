@@ -87,6 +87,11 @@
 			Hydra.module.test( this.sModuleId, this.fpCallback );
 
 			assertTrue( this.fpCallback.calledOnce );
-		}
+		},
+    "test should return the module": function () {
+      var oModule = Hydra.module.test( this.sModuleId );
+
+      assertFunction( oModule.init );
+    }
 	} ) );
 }(window, document, Hydra));
