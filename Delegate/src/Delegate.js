@@ -16,6 +16,38 @@
   var hasJquery = typeof jQuery !== 'undefined';
 
   /**
+   * Helper function to add events in crossbrowsing mode.
+   * @param oElement
+   * @param sEventType
+   * @param fpCallback
+   * @return {Function} callback
+   */
+  function addEvent( oElement, sEventType, fpCallback ) {
+    oElement.addEventListener = oElement.addEventListener || function ( sEvent, fpCB, bCapture ){
+      return this.attachEvent('on' + sEvent.toLowerCase(), fpCB);      
+    };
+    return oElement.addEventListener(sEventType, fpCallback, false);
+  }
+  
+  /**
+   * Helper function to get an array from a nodelist.
+   * @param oNodeList
+   * @return {Array}
+   */
+  function getArray( oNodeList ) {
+	  var nIndex, nLenItems, aNewArray;
+	  try{
+		  return [].slice.call(oNodeList);
+  	}catch(er){
+  		aNewArray = [];
+  		for( nIndex = 0, nLenItems = oNodeList.length; nIndex < nLenItems; nIndex++ ) {
+  			aNewArray.push(oNodeList[nIndex]);
+  		}
+  		return aNewArray;
+  	}
+  }
+  
+  /**
    * Base Module to delegate events to document.
    */
   Hydra.module.register( 'delegate-base-module', function ( oBus )
